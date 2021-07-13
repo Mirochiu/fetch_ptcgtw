@@ -1,0 +1,8 @@
+{
+  "name": "fetchImgs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "mirochiu",
+  "license": "MIT",
+  "private": true
+}
