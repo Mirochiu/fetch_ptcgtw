@@ -15,16 +15,13 @@ const writeToFile = async (option) => {
 
 const downloadFile = async (url, opt = {}) => {
     if (typeof url !== 'string' || !url)
-        throw new Error("download url invalid");
+        throw new Error("url invalid for downloading");
 
     const fileName = new URL(url).pathname.split('/').pop()
     const filePath = path.join(opt.dirName || './', fileName)
-    if (fs.existsSync(filePath)) {
-        // console.debug(`cached ${opt.debugName}(${filePath})`)
+    if (fs.existsSync(filePath))
         return false;
-    }
 
-    // console.debug(`download ${opt.debugName} from ${url}, write to ${filePath}`)
     const rsp = await axios({
         method: 'get',
         url: url,

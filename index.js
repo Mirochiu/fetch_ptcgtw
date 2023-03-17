@@ -6,7 +6,6 @@ const { downloadFile } = require('./utils')
 const searchByCardName = require('./searchByCardName')
 
 const CMD_ARGS = process.argv.slice(2)
-console.debug(CMD_ARGS)
 
 const CardObject2Name = (o) => {
     return {
@@ -19,60 +18,61 @@ const CardObject2Name = (o) => {
     }
 }
 
-const downloadImgsforCardSet = async (cardSetNumber) => {
-    const cardSet = await getCardset(cardSetNumber)
-
-    const num = Object.keys(cardSet).length
-    if (num <= 0)
-        throw new Error('cardset empty')
-
-    console.debug('imgs in cardset:', num);
-
-    if (!fs.existsSync(cardSetNumber))
-        fs.mkdirSync(cardSetNumber, { recursive: true });
-
-    for await (const [url, o] of Object.entries(cardSet)) {
-        // console.debug(url, o.name)
-        downloadFile(url, { debugName: o.name, dirName: cardSetNumber })
-            .then(downloaded => {
-                // 只有第一次下載的時候,會去檢查是否這個圖片有細節可用,這會影響到之後名稱,搜尋進化鏈的功能運作
-                // 奶爸網站因為有很多版本,有些圖也是會暫時先上去,而之後會改
-                if (downloaded)
-                    getDetailByImgurUrl(url).then(detail => {
-                        if (!detail.name || detail.name != o.name) {
-                            console.error(`[WARNING]no detail for card ${o.name} ${url}`)
-                        }
-                    })
-            })
-    }
-
-    console.log('done')
-}
-
 const main = async () => {
     switch (CMD_ARGS[0]) {
         case '-d':
             {
-                await downloadImgsforCardSet(CMD_ARGS[1])
+                const cardSetId = CMD_ARGS[1]
+                console.log(`get card set ${cardSetId} from Ptcg.tw shop`)
+                const cardSet = await getCardset(cardSetId)
+                const num = Object.keys(cardSet).length
+                if (num <= 0)
+                    throw new Error('無資料,無法處理牌組')
+
+                if (!fs.existsSync(cardSetId))
+                    fs.mkdirSync(cardSetId, { recursive: true });
+
+                for await (const [url, o] of Object.entries(cardSet)) {
+                    downloadFile(url, { debugName: o.name, dirName: cardSetId })
+                        .then(downloaded => {
+                            // 只有第一次下載的時候,會去檢查是否這個圖片有細節可用,這會影響到之後名稱,搜尋進化鏈的功能運作
+                            // 奶爸網站因為有很多版本,有些圖也是會暫時先上去,而之後會改
+                            if (downloaded)
+                                getDetailByImgurUrl(url).then(detail => {
+                                    if (!detail.name || detail.name != o.name) {
+                                        console.error(`[警示]沒有卡牌${o.name}的詳細資料,可能是新卡/暫時使用/不再維護的卡片,建議重新編排卡牌 ${url}`)
+                                    }
+                                })
+                        })
+                }
+
+                console.log('完成')
                 break
             }
         case '-s':
             {
-                const list = await searchByCardName(CMD_ARGS[1])
-                console.debug(list.length)
-                if (list.length < 20) {
-                    console.log('嘗試取回卡片名稱...')
-                    for await(const o of list) {
-                        const detail = await getDetailByImgurUrl(o.full)
-                        console.log(`${detail.name} \t\t ${detail.set_name} \t ${o.full}`)
-                    }
-                } else {
-                    console.log('太多筆資料,不嘗試取回卡片名稱')
+                const cardName = CMD_ARGS[1];
+                console.log(`在ptcgtw.shop搜尋卡片:${cardName}`)
+                const list = await searchByCardName(cardName)
+                if (list.length < 1) {
+                    console.log(`沒找到名稱含有'${cardName}'的卡片`)
+                    break
+                }
+                if (list.length > 20) {
+                    console.log(`太多搜尋結果${list.length},不嘗試取回卡片名稱`)
+                    break
+                }
+                console.log('嘗試取回卡片名稱...')
+                for await (const o of list) {
+                    const detail = await getDetailByImgurUrl(o.full)
+                    console.log(`${detail.name} \t\t ${detail.set_name} \t ${o.full}`)
                 }
                 break
             }
         default:
-            console.error('usage: -d for download imgs with card set id; -s for search card with name')
+            console.error('usage:')
+            console.error('  -d <card-set-id>   download imgs with card set id')
+            console.error('  -s [<target name>] search card with name')
     }
 }
 main()
