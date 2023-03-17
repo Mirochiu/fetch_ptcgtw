@@ -22,11 +22,12 @@ const searchPtcgtwShopByName = async (name, opt = { lang: LANGUAGE }) => {
 
 const removeDebugMsg = (data) => {
     const startPos = data.indexOf('|')
+    if (startPos == -1) return [];
     const payload = data.substring(startPos + 1)
     let arr = payload.split('|');
     let results = [];
     for (let i in arr) {
-        let [full, thumbnail] = arr[i].split("※")
+        const [full, thumbnail] = arr[i].split("※")
         results.push({ full, thumbnail });
     }
     return results

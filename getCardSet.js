@@ -4,7 +4,14 @@ const { writeToFile } = require('./utils');
 
 const getFromPtcgtwShopOrCache = async (id, force) => {
     const fileName = `${id}.txt`;
-    const fileExist = await fs.access(fileName, fs.constants.F_OK)
+    let fileExist
+    try {
+        await fs.access(fileName, fs.constants.F_OK)
+        fileExist = true
+    } catch(err) {
+        fileExist = false
+    }
+    
     if (!force && fileExist) {
         const buffer = await fs.readFile(fileName);
         return { fileName, data: buffer.toString() };
@@ -13,12 +20,10 @@ const getFromPtcgtwShopOrCache = async (id, force) => {
     url.searchParams.append('type', '找牌組');
     url.searchParams.append('short_url', id);
     const rsp = await axios.get(url.toString());
-    if (rsp.status !== 200) {
+    if (rsp.status !== 200)
         throw new Error('http status != 200' + rsp.status);
-    }
-    if (!rsp.data) {
+    if (!rsp.data)
         throw new Error('not found data');
-    }
     return { fileName, data: rsp.data };
 }
 
@@ -40,8 +45,10 @@ const decodePtcgtwShop = (share = '') => {
 
 const main = async (cardSetId, opt = {}) => {
     if (typeof cardSetId !== 'string' || !cardSetId)
-        throw new Error('cardSetId not given');
+        throw new Error('你需要給予牌組ID才能取回');
     const cardSetInfo = await getFromPtcgtwShopOrCache(cardSetId, opt.forceRefresh)
+    if (cardSetInfo.data == 'no')
+        throw new Error(`伺服器回傳沒有${cardSetId}牌組的資料`);
     await writeToFile(cardSetInfo);
     return decodePtcgtwShop(cardSetInfo.data)
 }
