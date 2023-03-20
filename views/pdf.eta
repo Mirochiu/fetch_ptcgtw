@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title><%= it.cardSetId %> 牌組PDF輸出</title>
+    <style>
+img{
+    border:0
+}
+@page {
+    size: A4 portrait; margin: 7mm
+}
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: 0.25rem;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+.btn-primary {
+    color: #fff;
+    background-color: #007bff;
+    border-color: #007bff;
+}
+.btn-secondary {
+    color: #fff;
+    background-color: #6c757d;
+    border-color: #6c757d;
+}
+.btn-success {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
+}
+[type=reset], [type=submit], button, html [type=button] {
+    -webkit-appearance: button;
+}
+.btn:not(:disabled):not(.disabled) {
+    cursor: pointer;
+}
+    </style>
+</head>
+
+<body>
+    <button class="btn btn-primary" onclick="goBack()">返回牌組</button>
+    <button class="btn btn-primary" onclick='onDownload("default")'>下載成單一PDF</button>
+    <button class="btn btn-primary" onclick='onDownload("ibon")'>下載超商用PDF</button>
+    <br />
+    <% let count=0; %>
+    <% for (var i of it.cardSetInfo) { %>
+        <% for (var repeat=0 ; repeat<i.count ; repeat=repeat+1) { %>
+            <% count=count+1 %>
+<img src='<%= i.imgUrl %>' style='width:6.28cm;height:8.78cm;border:#334433 0.02cm solid;border-radius:0.3cm;margin:0;padding:0'>
+            <% if (count % 9 == 0) { %>
+<p style='page-break-after:always'></p>
+            <% } else if (count % 3 == 0) { %>
+<br>
+            <% } %>
+        <% } %>
+    <% } %>
+<script>
+function goBack(){window.history.back();}
+let all=[];
+let count=0;
+<% for (var i of it.cardSetInfo) { %>
+    <% for (var repeat=0 ; repeat<i.count ; repeat=repeat+1) { %>
+all[count]='<%= i.imgUrl %>';
+count++;
+    <% } %>
+<% } %>
+</script>
+<script src="https://unpkg.com/jspdf@latest/dist/jspdf.umd.min.js"></script>
+<script>
+window.jsPDF = window.jspdf.jsPDF; // add this line of code
+function onDownload(depage){
+	if(depage=='ibon'){
+		//63變61
+		//88變85
+        let doc = jsPDF('p', 'mm', 'a4');
+        let line=0;
+        let w=0;	
+        let weight=63*1.03
+        let height=88*1.03
+        for(let i in all){
+            if(i>0 && i%63==0){
+                alert("超過ibon上限，自動分檔案");
+                file_name=(parseInt(i/63)+1);
+                doc.save(`2023-03-20-${file_name}.pdf`);
+                doc = jsPDF('p', 'mm', 'a4');
+                line=0;
+                w=0;
+            }
+            if(i>0 && i%9==0){
+                doc.addPage('p', 'mm', 'a4');
+                line=0;
+            }
+            doc.addImage(all[i], "JPEG", ((210-weight*3)/2)+weight*w, ((297-height*3)/2)+height*line,weight, height);
+            if(i%3==2){
+                w=0;
+                line++;
+            }else{
+                w++;
+            }
+        }
+        file_name=(parseInt(all.length/63)+1);
+        doc.save(`2023-03-20-${file_name}.pdf`);
+	}
+	else{
+        let doc = jsPDF('p', 'mm', 'a4');
+        let line=0;
+        let w=0;
+        for(let i in all){
+            if(i>0 && i%9==0){
+                doc.addPage('p', 'mm', 'a4');
+                line=0;
+            }
+            doc.addImage(all[i], "JPEG", 10.5+63*w, 16.5+88*line,63, 88);
+            if(i%3==2){
+                w=0;
+                line++;
+            }else{
+                w++;
+            }
+        }
+        file_name=(parseInt(all.length/63)+1);
+        doc.save(`2023-03-20-${file_name}.pdf`);
+	}
+}
+</script>
+
+
+</body>

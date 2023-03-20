@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <title><%= it.cardSetId %> 牌組</title>
+</head>
+
+<body>
+    <h1><%= it.cardSetId %> 牌組</h1>
+    <button onclick="goBack()">返回再試</button><script>function goBack(){window.history.back();}</script>
+    <button onclick="goPrint()">列印</button><script>function goPrint(){window.location.href=window.location.href+"/pdf";}</script>
+    <ul>
+    <% for (var i of it.cardSetInfo) { %>
+        <li><%= i.cardName %>  <%= i.count %>張 </li>
+    <% } %>
+    </ul>
+</body>
+
+</html>

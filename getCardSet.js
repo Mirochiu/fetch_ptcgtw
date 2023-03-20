@@ -1,30 +1,20 @@
-const fs = require('fs').promises;
+const fs = require('fs');
 const axios = require('axios').default;
+const path = require('path');
 const { writeToFile } = require('./utils');
 
-const getFromPtcgtwShopOrCache = async (id, force) => {
-    const fileName = `${id}.txt`;
-    let fileExist
-    try {
-        await fs.access(fileName, fs.constants.F_OK)
-        fileExist = true
-    } catch(err) {
-        fileExist = false
-    }
-    
-    if (!force && fileExist) {
-        const buffer = await fs.readFile(fileName);
-        return { fileName, data: buffer.toString() };
-    }
+const getFromPtcgtwShop = async (id) => {
     const url = new URL('https://ptcgtw.shop/connect_mysql2.php');
     url.searchParams.append('type', '找牌組');
     url.searchParams.append('short_url', id);
+
     const rsp = await axios.get(url.toString());
     if (rsp.status !== 200)
         throw new Error('http status != 200' + rsp.status);
+
     if (!rsp.data)
         throw new Error('not found data');
-    return { fileName, data: rsp.data };
+    return rsp.data;
 }
 
 const decodePtcgtwShop = (share = '') => {
@@ -46,11 +36,28 @@ const decodePtcgtwShop = (share = '') => {
 const main = async (cardSetId, opt = {}) => {
     if (typeof cardSetId !== 'string' || !cardSetId)
         throw new Error('你需要給予牌組ID才能取回');
-    const cardSetInfo = await getFromPtcgtwShopOrCache(cardSetId, opt.forceRefresh)
-    if (cardSetInfo.data == 'no')
-        throw new Error(`伺服器回傳沒有${cardSetId}牌組的資料`);
-    await writeToFile(cardSetInfo);
-    return decodePtcgtwShop(cardSetInfo.data)
+
+    const { force = false, cache_dir = './', no_cache = false } = opt;
+
+    if (!fs.existsSync(cache_dir))
+        fs.mkdirSync(cache_dir, { recursive: true });
+
+    const fileName = path.join(cache_dir, `${cardSetId}.txt`);
+
+    let cardSetInfo
+
+    if (!force && fs.existsSync(fileName)) {
+        cardSetInfo = fs.readFileSync(fileName).toString();
+    } else {
+        cardSetInfo = await getFromPtcgtwShop(cardSetId)
+        if (cardSetInfo.data == 'no')
+            throw new Error(`伺服器回傳沒有${cardSetId}牌組的資料`);
+
+        if (!no_cache)
+            await writeToFile({ fileName, data: cardSetInfo });
+    }
+
+    return decodePtcgtwShop(cardSetInfo)
 }
 
 module.exports = main

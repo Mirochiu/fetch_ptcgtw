@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+
+<head>
+	<meta charset="UTF-8">
+	<title>展示構築</title>
+</head>
+
+<body>
+	<h1>展示構築</h1>
+	<form action="get" onsubmit="goCardSet(event);">
+		<input type='text' placeholder="XQ6404" value=''><input type="submit" value="看構築">
+	</form>
+	<script>
+		function goCardSet(e) {
+			e.preventDefault();
+			const input = document.querySelector('input[type=text]')
+			if (!input) return;
+			window.location.href = "cardset/" + input.value;
+		}
+	</script>
+</body>
+
+</html>
