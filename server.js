@@ -6,6 +6,7 @@ const fs = require('fs')
 
 const getCardSet = require('./getCardSet')
 const getOfficialCardSet = require('./getOfficialCardSet')
+const getPokemonCardSet = require('./getPokemonCardSet')
 const { downloadFile } = require('./utils')
 
 const appConfig = {
@@ -38,14 +39,14 @@ app.set("view engine", "eta");
 app.set("views", "./views");
 
 const cacheImg = async (url) => {
-    if (!url)
-        return url;
-
-    if (!url.startsWith('https://asia.pokemon-card.com/'))
-        return url;
-
-    const { fileName } = await downloadFile(url, { dirName: appConfig.IMG_CACHE_DIR })
-    return appConfig.IMG_CACHE_STATIC_ROUTE + '/' + fileName
+    if (url && (
+        url.startsWith('https://asia.pokemon-card.com/') ||
+        url.startsWith('https://www.pokemon-card.com/')
+    )) {
+        const { fileName } = await downloadFile(url, { dirName: appConfig.IMG_CACHE_DIR })
+        return appConfig.IMG_CACHE_STATIC_ROUTE + '/' + fileName
+    }
+    return url;
 }
 
 const officialCardsetInfo2render = async (info) => {
@@ -83,6 +84,22 @@ app.get('/officialcardset/:cardSetId/pdf', checkOfficialCardSetId, async (req, r
     const cardSetInfo = await officialCardsetInfo2render(info)
     return res.render('pdf', { cardSetId, cardSetInfo });
 })
+
+// jpcardset
+app.get('/jpcardset/:cardSetId', checkOfficialCardSetId, async (req, res) => {
+    const { cardSetId } = req.params
+    const info = await getPokemonCardSet(cardSetId, { cache_dir: appConfig.CardsetCacheDir })
+    const cardSetInfo = await officialCardsetInfo2render(info)
+    return res.render('cardset', { cardSetId, cardSetInfo });
+})
+
+app.get('/jpcardset/:cardSetId/pdf', checkOfficialCardSetId, async (req, res) => {
+    const { cardSetId } = req.params
+    const info = await getPokemonCardSet(cardSetId, { cache_dir: appConfig.CardsetCacheDir })
+    const cardSetInfo = await officialCardsetInfo2render(info)
+    return res.render('pdf', { cardSetId, cardSetInfo });
+})
+
 
 const PtcgtwCardSetInfo2render = async (info) => {
     let data = []
