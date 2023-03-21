@@ -24,7 +24,7 @@ const main = async () => {
                     for await (const [url, o] of Object.entries(cardSet)) {
                         console.log(`${o.cardName} \t ${o.count}張 \t ${url}`)
                         downloadFile(url, { debugName: o.cardName, dirName: cardSetId })
-                            .then(downloaded => {
+                            .then(({ downloaded }) => {
                                 if (downloaded) console.log(`卡牌圖${o.name}處理完成`)
                             })
                     }
@@ -48,7 +48,7 @@ const main = async () => {
                     for await (const [url, o] of Object.entries(cardSet)) {
                         console.log(`${o.name} \t ${o['張數']}張 \t ${url}`)
                         downloadFile(url, { debugName: o.name, dirName: cardSetId })
-                            .then(downloaded => {
+                            .then(({ downloaded }) => {
                                 // 只有第一次下載的時候,會去檢查是否這個圖片有細節可用,這會影響到之後名稱,搜尋進化鏈的功能運作
                                 // 奶爸網站因為有很多版本,有些圖也是會暫時先上去,而之後會改
                                 if (downloaded)

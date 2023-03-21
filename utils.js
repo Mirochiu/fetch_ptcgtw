@@ -20,7 +20,7 @@ const downloadFile = async (url, opt = {}) => {
     const fileName = new URL(url).pathname.split('/').pop()
     const filePath = path.join(opt.dirName || './', fileName)
     if (fs.existsSync(filePath))
-        return false;
+        return { downloaded: false, filePath, fileName };
 
     const rsp = await axios({
         method: 'get',
@@ -33,7 +33,7 @@ const downloadFile = async (url, opt = {}) => {
     else if (!rsp.data)
         throw new Error(`not found data for ${filePath}`);
     rsp.data.pipe(fs.createWriteStream(filePath))
-    return true;
+    return { downloaded: true, filePath, fileName };
 }
 
 module.exports = { writeToFile, downloadFile };
