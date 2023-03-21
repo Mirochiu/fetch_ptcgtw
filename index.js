@@ -5,11 +5,36 @@ const getDetailByImgurUrl = require('./getDetailByImgurUrl')
 const { downloadFile } = require('./utils')
 const searchByCardName = require('./searchByCardName')
 const getOfficialCardSet = require('./getOfficialCardSet');
+const getPokemonCardSet = require('./getPokemonCardSet');
 
 const CMD_ARGS = process.argv.slice(2)
 
 const main = async () => {
     switch (CMD_ARGS[0]) {
+        case '-j':
+            {
+                const cardSetId = CMD_ARGS[1]
+                console.log(`取出pokemon-card.com的牌組資料:${cardSetId}`)
+                try {
+                    const cardSet = await getPokemonCardSet(cardSetId)
+                    const num = Object.keys(cardSet).length
+                    if (num <= 0)
+                        throw new Error('無資料,無法處理牌組')
+                    if (!fs.existsSync(cardSetId))
+                        fs.mkdirSync(cardSetId, { recursive: true });
+                    for await (const [url, o] of Object.entries(cardSet)) {
+                        console.log(`${o.cardName} \t ${o.count}張 \t ${url}`)
+                        downloadFile(url, { debugName: o.cardName, dirName: cardSetId })
+                            .then(({ downloaded }) => {
+                                if (downloaded) console.log(`卡牌圖${o.cardName}處理完成`)
+                            })
+                    }
+                    console.log('完成')
+                } catch (err) {
+                    console.error('發生錯誤,無法處理', err)
+                }
+                break
+            }
         case '-a':
             {
                 const cardSetId = CMD_ARGS[1]
@@ -88,6 +113,7 @@ const main = async () => {
         default:
             console.error('使用參數:')
             console.error('  -a <card-set-id>  下載官方牌組資料與卡片')
+            console.error('  -j <card-set-id>  下載日本官方牌組資料與卡片')
             console.error('  -d <card-set-id>  下載奶爸牌組資料與卡片')
             console.error('  -s [<target name>] 搜尋卡片')
     }

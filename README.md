@@ -40,3 +40,9 @@ npm start # 運行
     `npm run web`
 
     預設使用localhost:3000作為網站[首頁](http://localhost:3000)
+
+5. 下載日本官方牌組資料與卡片
+
+    `npm start -- -j vkkVFv-3KMnjA-VFfFvf`
+
+    ![](./resoucres/demo_for_jp_official_cardset.png)
