@@ -1,4 +1,4 @@
-# 取得PTCGTW.SHOP牌組與卡片
+# 取得PTCG牌組與卡片
 
 ## 運行需求
 
@@ -28,3 +28,9 @@ npm start # 運行
     `npm start -- -d XQ6404`
 
     ![](./resoucres/demo_for_cardset.png)
+
+3. 下載官方牌組資料與卡片
+
+    `npm start -- -a TYQEeb-ViCGZK-XgeNby`
+
+    ![](./resoucres/demo_for_official_cardset.png)
