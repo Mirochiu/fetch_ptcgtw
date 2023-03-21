@@ -108,14 +108,14 @@ const checkPtcgtwCardSetId = (req, res, next) => {
 app.get('/cardset/:cardSetId', checkPtcgtwCardSetId, async (req, res) => {
     const { cardSetId } = req.params
     const info = await getCardSet(cardSetId, { cache_dir: appConfig.CardsetCacheDir })
-    const cardSetInfo = PtcgtwCardSetInfo2render(info)
+    const cardSetInfo = await PtcgtwCardSetInfo2render(info)
     return res.render('cardset', { cardSetId, cardSetInfo });
 })
 
 app.get('/cardset/:cardSetId/pdf', checkPtcgtwCardSetId, async (req, res) => {
     const { cardSetId } = req.params
     const info = await getCardSet(cardSetId, { cache_dir: appConfig.CardsetCacheDir })
-    const cardSetInfo = PtcgtwCardSetInfo2render(info)
+    const cardSetInfo = await PtcgtwCardSetInfo2render(info)
     return res.render('pdf', { cardSetId, cardSetInfo });
 })
 

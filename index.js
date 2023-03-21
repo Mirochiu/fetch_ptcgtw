@@ -25,7 +25,7 @@ const main = async () => {
                         console.log(`${o.cardName} \t ${o.count}張 \t ${url}`)
                         downloadFile(url, { debugName: o.cardName, dirName: cardSetId })
                             .then(({ downloaded }) => {
-                                if (downloaded) console.log(`卡牌圖${o.name}處理完成`)
+                                if (downloaded) console.log(`卡牌圖${o.cardName}處理完成`)
                             })
                     }
                     console.log('完成')

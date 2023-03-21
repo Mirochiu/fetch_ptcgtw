@@ -34,3 +34,9 @@ npm start # 運行
     `npm start -- -a TYQEeb-ViCGZK-XgeNby`
 
     ![](./resoucres/demo_for_official_cardset.png)
+
+4. 展示構築
+
+    `npm run web`
+
+    預設使用localhost:3000作為網站[首頁](http://localhost:3000)
