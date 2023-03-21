@@ -4,19 +4,31 @@
 <head>
 	<meta charset="UTF-8">
 	<title>展示構築</title>
+	<style>
+input:invalid {
+  border: 2px dotted red;
+}
+input:valid {
+  border: 2px solid black;
+}
+	</style>
 </head>
 
 <body>
 	<h1>展示構築</h1>
-	<form action="get" onsubmit="goCardSet(event);">
-		<input type='text' placeholder="XQ6404" value=''><input type="submit" value="看構築">
+	<form action="cardset/" onsubmit="goCardSet(event);">
+		<input type='text' name="cardSetId" required placeholder="XQ6404"><input type="submit" value="看奶爸構築">
+	</form>
+	<br />
+	<form action="officialcardset/" onsubmit="goCardSet(event);">
+		<input type='text' name="cardSetId" required placeholder="TYQEeb-ViCGZK-XgeNby"><input type="submit" value="看官方構築">
 	</form>
 	<script>
 		function goCardSet(e) {
 			e.preventDefault();
-			const input = document.querySelector('input[type=text]')
-			if (!input) return;
-			window.location.href = "cardset/" + input.value;
+			const form = e.target;
+			if (!form.cardSetId) return;
+			window.location.href = form.getAttribute('action') + form.cardSetId.value;
 		}
 	</script>
 </body>

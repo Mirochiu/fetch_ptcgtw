@@ -4,12 +4,14 @@ const path = require('path')
 const eta = require('eta')
 
 const getCardSet = require('./getCardSet')
+const getOfficialCardSet = require('./getOfficialCardSet')
 
 const appConfig = {
     debug: true,
     DIR_NAME: path.join(__dirname, 'public'),
     CardsetCacheDir: path.join(__dirname, 'cardsets'),
     CardsetNameRule: new RegExp('^[a-zA-Z]{2}[0-9]{4}$'),
+    OfficialCardsetNameRule: new RegExp('^[a-zA-Z0-9]{6}-[a-zA-Z0-9]{6}-[a-zA-Z0-9]{6}$'),
 };
 
 const app = express();
@@ -29,6 +31,43 @@ app.set("views", "./views");
 
 app.get('/', function (req, res) {
     res.status(200).send('hello, it works').end()
+})
+
+// officialcardset
+app.get('/officialcardset/:cardSetId', async (req, res) => {
+    const { cardSetId } = req.params
+    if (!appConfig.OfficialCardsetNameRule.test(cardSetId)) {
+        res.status(400).send(`牌組號碼格式錯誤 ${cardSetId}`).end()
+        return
+    }
+    const info = await getOfficialCardSet(cardSetId, { cache_dir: appConfig.CardsetCacheDir })
+    let data = []
+    for await (const [url, o] of Object.entries(info)) {
+        data.push({
+            imgUrl: url,
+            cardName: o.cardName,
+            count: o.count,
+        })
+    }
+    return res.render('cardset', { cardSetId, cardSetInfo: data });
+})
+
+app.get('/officialcardset/:cardSetId/pdf', async (req, res) => {
+    const { cardSetId } = req.params
+    if (!appConfig.OfficialCardsetNameRule.test(cardSetId)) {
+        res.status(400).send(`牌組號碼格式錯誤 ${cardSetId}`).end()
+        return
+    }
+    const info = await getOfficialCardSet(cardSetId, { cache_dir: appConfig.CardsetCacheDir })
+    let data = []
+    for await (const [url, o] of Object.entries(info)) {
+        data.push({
+            imgUrl: url,
+            cardName: o.cardName,
+            count: o.count,
+        })
+    }
+    return res.render('pdf', { cardSetId, cardSetInfo: data });
 })
 
 app.get('/cardset/:cardSetId', async (req, res) => {
